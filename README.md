@@ -37,10 +37,11 @@ A local talking-head editing workbench. Compare takes, review in context, correc
 sudo apt-get install ffmpeg fonts-noto-cjk python3-venv
 
 # macOS（已安装 Homebrew）
-brew install ffmpeg
+brew install ffmpeg-full
+export PATH="$(brew --prefix ffmpeg-full)/bin:$PATH"
 ```
 
-macOS 请确保系统中有可用的中文字体。FFmpeg 需包含 libx264、AAC、libass 字幕与 drawtext 功能；`doctor` 会检查这些编解码与滤镜功能。
+macOS 请确保系统中有可用的中文字体。使用 [Homebrew 的 ffmpeg-full](https://formulae.brew.sh/formula/ffmpeg-full)，以包含字幕渲染与文字滤镜；它是 keg-only 安装，需将上面的 PATH 设置保留在当前终端或 shell 配置中。FFmpeg 需包含 libx264、AAC、libass 字幕与 drawtext 功能；`doctor` 会检查这些编解码与滤镜功能。
 
 ```sh
 git clone https://github.com/AsherLay/userese-video.git
