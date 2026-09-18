@@ -1,0 +1,23 @@
+name: Bug report / 问题反馈
+description: 使用合成或脱敏素材描述可复现的问题
+body:
+  - type: textarea
+    id: environment
+    attributes:
+      label: 运行环境
+      description: userese-video 版本、系统、Python、FFmpeg 和浏览器版本
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 怎样复现
+      description: 提供操作步骤或命令；请勿粘贴真人原片、访问口令或私有转写
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期与实际结果
+    validations:
+      required: true

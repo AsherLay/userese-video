@@ -1,0 +1,7 @@
+{
+  "name": "userese-video-browser-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {"test": "node tests/browser.mjs"},
+  "devDependencies": {"@playwright/test": "^1.58.0"}
+}

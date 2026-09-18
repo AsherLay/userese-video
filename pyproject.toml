@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "userese-video"
+version = "0.1.0"
+description = "A local, reviewable talking-head editing workbench. AI proposes. You decide."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "AsherLay"}]
+dependencies = []
+classifiers = ["Development Status :: 3 - Alpha", "Programming Language :: Python :: 3", "Operating System :: POSIX"]
+
+[project.optional-dependencies]
+asr = ["faster-whisper>=1.1,<2"]
+
+[project.scripts]
+userese-video = "userese_video.cli:main"
+
+[project.urls]
+Repository = "https://github.com/AsherLay/userese-video"
+Issues = "https://github.com/AsherLay/userese-video/issues"
+
+[tool.setuptools.packages.find]
+include = ["userese_video*"]
+
+[tool.setuptools.package-data]
+userese_video = ["web/*"]

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Userese Video · 口播剪片台</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="masthead"><a href="/" class="brand">userese<span>video</span><span class="version">α 0.1</span></a><span class="local-label"><i></i>素材与决定，保存在本机</span></header>
+  <main>
+    <section id="login" class="login" hidden>
+      <p class="eyebrow">YOUR EDITING ROOM</p><h1>打开你的剪片台</h1>
+      <p>使用启动服务时显示的完整链接，或填写本次访问口令。</p>
+      <form id="login-form"><label for="token">访问口令</label><input id="token" type="password" autocomplete="off" required><button class="primary">打开工作台</button></form>
+    </section>
+    <div id="workspace" hidden>
+      <section class="intro"><div><p class="eyebrow">TALKING-HEAD EDITING WORKBENCH</p><h1>这一段，<em>用哪一遍？</em></h1><p id="project-title"></p></div><div class="progress"><strong id="progress-count">0 / 0</strong><span>段已做决定</span></div></section>
+      <div class="workspace">
+        <aside class="segment-panel"><div class="section-top"><h2>你的表达</h2><span id="segment-count"></span></div><p class="hint">按意思整理，逐段听一遍。</p><label class="mobile-picker" for="segment-select">当前段落</label><select id="segment-select" class="mobile-picker"></select><nav id="segments" aria-label="语义段"></nav><div class="legend">◌ 待确认　✓ 使用　− 不放<br>↻ 待优化</div></aside>
+        <section class="review-panel" aria-label="候选审片">
+          <div class="section-top"><span id="segment-number" class="eyebrow"></span><span id="saved-status" class="pill"></span></div><h2 id="segment-title" class="segment-title"></h2>
+          <div class="video-stage"><video id="player" controls playsinline preload="metadata"></video><span id="playing-label" class="video-label">原片预览</span></div>
+          <div class="playback-tools"><button id="listen">▶ 单独听这一遍</button><button id="context">连着前后听</button><button id="original" class="quiet">查看完整原片</button></div>
+          <div class="section-top candidates-title"><h3>同一个意思，不同的表达</h3><span class="hint">浏览候选不会改变决定</span></div><div id="takes" class="takes"></div>
+          <details class="transcript"><summary>原始识别与字幕纠错</summary><p class="hint">原始识别保留作对照。纠错只改变新成片的字幕，不修改录音。</p><div id="captions"></div></details>
+        </section>
+        <aside class="decision-panel"><p class="eyebrow">YOUR CALL</p><h2>保留你的判断。</h2><p id="decision-summary" class="hint"></p>
+          <div class="decision-actions"><button id="keep" class="primary">✓ 就用这一遍</button><button id="skip">这段先不放</button><button id="optimize">↻ 这段需要优化</button></div>
+          <label for="note">哪里需要调整？</label><textarea id="note" rows="5" maxlength="3000" placeholder="比如：开头接不上，想保留最后一句。"></textarea><button id="save">保存备注与字幕</button><p id="save-receipt" class="receipt" role="status">已读取保存记录</p>
+          <div class="decision-explanation">AI 的建议只是起点。<br>点击「就用这一遍」，才是你的决定。</div>
+          <div class="snapshot-tools"><button id="export" class="quiet">导出本页决定</button><label class="file-button">导入决定快照<input id="import" type="file" accept=".json,application/json"></label></div>
+        </aside>
+      </div>
+      <section class="delivery"><div class="delivery-heading"><div><p class="eyebrow">FROM DECISIONS TO A CUT</p><h2>把决定，变成一个新版本。</h2><p class="hint">每次生成都会保存当时的选择。旧成片继续保留。</p></div><div class="build-controls"><label><input id="draft" type="checkbox">允许未确认建议，生成建议版</label><button id="build" class="primary">按已保存决定生成</button></div></div>
+        <p id="job-status" role="status" aria-live="polite"></p>
+        <div id="delivery-content" hidden><div><video id="draft-player" controls playsinline preload="metadata"></video><button id="jump">回到当前成片段落</button></div><div><label for="history">成片版本</label><select id="history"></select><p id="build-info" class="hint"></p><div id="downloads" class="downloads"></div></div></div>
+        <p id="empty-history" class="empty">还没有成片。选好之后，从这里生成第一版。</p>
+      </section>
+      <details class="source-audit"><summary>完整原片转写 · 未选中的内容也在这里</summary><div id="source-cues"></div></details>
+    </div>
+    <p id="notice" class="notice" role="alert" hidden></p>
+  </main>
+  <footer><span>userese video</span><span>说清楚，也保留你自己的说法。</span></footer>
+</body>
+</html>

@@ -1,0 +1,23 @@
+[
+  {
+    "id": "opening",
+    "title": "开场的两种表达",
+    "suggested": "opening-b",
+    "takes": [
+      {"id": "opening-a", "label": "第一遍", "parts": [{"source": "source-001", "start": 0, "end": 2}]},
+      {"id": "opening-b", "label": "第二遍", "parts": [{"source": "source-001", "start": 2, "end": 4}]}
+    ]
+  },
+  {
+    "id": "body",
+    "title": "主体观点",
+    "suggested": "body-a",
+    "takes": [{"id": "body-a", "label": "完整表达", "parts": [{"source": "source-001", "start": 4, "end": 8}]}]
+  },
+  {
+    "id": "ending",
+    "title": "结尾",
+    "suggested": "ending-a",
+    "takes": [{"id": "ending-a", "label": "完整结尾", "parts": [{"source": "source-001", "start": 8, "end": 12}]}]
+  }
+]
