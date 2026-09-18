@@ -73,9 +73,10 @@ def encode_part(project, part, destination):
         command += ["-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo"]
     command += ["-map", "0:v:0", "-map", "0:a:0" if source["audio"] else "1:a:0",
                 "-vf", f"scale={width}:{height}:force_original_aspect_ratio=decrease:force_divisible_by=2,"
-                       f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=25,tpad=stop_mode=clone:stop_duration=0.1",
+                       f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=25:start_time=0,"
+                       f"tpad=stop_mode=clone:stop_duration=0.1,trim=duration={seconds},setpts=N/(25*TB)",
                 "-af", f"aresample=48000:async=1:first_pts=0,apad,atrim=duration={seconds},asetpts=PTS-STARTPTS",
-                "-t", str(seconds), "-c:v", "libx264", "-preset", "fast", "-crf", "21", "-pix_fmt", "yuv420p",
+                "-t", str(seconds), "-frames:v", str(round(seconds * 25)), "-c:v", "libx264", "-preset", "fast", "-crf", "21", "-pix_fmt", "yuv420p",
                 "-threads", "2", "-c:a", "aac", "-ar", "48000", "-ac", "2",
                 "-map_metadata", "-1", "-map_chapters", "-1", "-movflags", "+faststart", str(destination)]
     run(command)
@@ -138,15 +139,17 @@ def build(project, state=None, draft=False, burn=True):
                                    "source_start": part["start"], "source_end": part["end"], "file": name,
                                    "output_start": round(clock, 6), "output_end": round(clock + measured, 6)})
                     clock += measured
-            (folder / "concat.txt").write_text("".join(f"file '{block['file']}'\n" for block in blocks), encoding="utf-8")
+            (folder / "concat.txt").write_text("".join(
+                f"file '{block['file']}'\nduration {block['output_end'] - block['output_start']:.6f}\n"
+                for block in blocks), encoding="utf-8")
             cues = write_captions(folder / "captions.srt", project, state, blocks)
             command = ["ffmpeg", "-v", "error", "-nostdin", "-y", "-f", "concat", "-safe", "1", "-i", "concat.txt",
                        "-map", "0:v:0", "-map", "0:a:0"]
+            video_filter = "setpts=N/(25*TB)"
             if burn:
-                command += ["-vf", "subtitles=captions.srt:force_style='FontName=Noto Sans CJK SC,FontSize=18,"
-                            "Outline=1,MarginV=24,MarginL=16,MarginR=16'", "-c:v", "libx264", "-preset", "fast", "-crf", "20", "-threads", "2"]
-            else:
-                command += ["-c:v", "copy"]
+                video_filter += ",subtitles=captions.srt:force_style='FontName=Noto Sans CJK SC,FontSize=18,Outline=1,MarginV=24,MarginL=16,MarginR=16'"
+            command += ["-vf", video_filter, "-frames:v", str(round(clock * 25)), "-r", "25",
+                        "-c:v", "libx264", "-preset", "fast", "-crf", "20", "-threads", "2"]
             command += ["-af", "alimiter=limit=0.95:level=false,aresample=48000:async=1:first_pts=0,apad",
                         "-t", str(clock), "-c:a", "aac", "-ar", "48000", "-ac", "2", "-map_metadata", "-1",
                         "-map_chapters", "-1", "-movflags", "+faststart", "video.mp4"]
@@ -201,9 +204,8 @@ def preview(project, take_id, context=False):
     with file_lock(project.root / ".preview.lock"):
         target = folder / "preview.mp4"
         if not target.exists():
-            for i, part in enumerate(parts):
-                encode_part(project, part, folder / f"{i}.mp4")
-            (folder / "concat.txt").write_text("".join(f"file '{i}.mp4'\n" for i in range(len(parts))), encoding="utf-8")
+            durations = [encode_part(project, part, folder / f"{i}.mp4") for i, part in enumerate(parts)]
+            (folder / "concat.txt").write_text("".join(f"file '{i}.mp4'\nduration {duration:.6f}\n" for i, duration in enumerate(durations)), encoding="utf-8")
             run(["ffmpeg", "-v", "error", "-nostdin", "-y", "-f", "concat", "-safe", "1", "-i", "concat.txt",
                  "-c", "copy", "-map_metadata", "-1", "-movflags", "+faststart", "preview.tmp.mp4"], cwd=folder)
             (folder / "preview.tmp.mp4").replace(target)

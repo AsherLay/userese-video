@@ -21,7 +21,9 @@ def smoke():
         destination = folder / "transcript.json"
         code = main(["transcribe", str(source), "--output", str(destination), "--model", "tiny.en", "--language", "en"])
         assert code == 0, "ASR command failed"
-        cues = read_json(destination)
+        result = read_json(destination)
+        cues = result["segments"]
+        assert result["raw_segments"]
         assert cues and all(cue["end"] > cue["start"] >= 0 for cue in cues)
         recognized = " ".join(cue["text"] for cue in cues).lower()
         assert "video" in recognized and "recordings" in recognized, recognized

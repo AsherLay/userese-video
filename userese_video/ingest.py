@@ -11,6 +11,22 @@ from .media import fingerprint, inspect_source, run
 from .model import Project, SCHEMA, initialize_state, text, validate_transcript, write_json
 
 
+def normalize_asr(raw, duration):
+    """Constrain model time estimates to real media while preserving raw evidence."""
+    segments, adjustments, previous = [], [], 0.0
+    for index, cue in enumerate(raw):
+        start = max(0.0, previous, float(cue["start"]))
+        end = min(duration, float(cue["end"]))
+        if end <= start or not cue["text"].strip():
+            adjustments.append({"index": index, "reason": "outside media, overlapping, or empty"})
+            continue
+        if start != cue["start"] or end != cue["end"]:
+            adjustments.append({"index": index, "reason": "bounded to media and previous segment", "start": start, "end": end})
+        segments.append({"start": start, "end": end, "text": cue["text"].strip()})
+        previous = end
+    return {"segments": segments, "raw_segments": raw, "timing_adjustments": adjustments}
+
+
 def parse_transcript(path):
     path = Path(path)
     raw = path.read_text(encoding="utf-8-sig")
@@ -47,6 +63,7 @@ def create(destination, title, inputs, catalog=None, output=None, script=None):
     temporary = Path(tempfile.mkdtemp(prefix=".userese-import-", dir=destination.parent))
     try:
         (temporary / "media").mkdir()
+        (temporary / "evidence").mkdir()
         sources, cues = [], []
         for i, (media_path, transcript_path) in enumerate(inputs, 1):
             media_path = Path(media_path).resolve()
@@ -60,7 +77,10 @@ def create(destination, title, inputs, catalog=None, output=None, script=None):
                 suffix = ".video"
             name = f"media/{sid}{suffix}"
             shutil.copyfile(media_path, temporary / name)
-            sources.append({"id": sid, "file": name, **info, "sha256": fingerprint(temporary / name)})
+            transcript_name = f"evidence/{sid}.srt" if Path(transcript_path).suffix.lower() == ".srt" else f"evidence/{sid}.json"
+            shutil.copyfile(transcript_path, temporary / transcript_name)
+            sources.append({"id": sid, "file": name, **info, "sha256": fingerprint(temporary / name),
+                            "transcript_file": transcript_name, "transcript_sha256": fingerprint(temporary / transcript_name)})
             cues.extend(imported)
         if catalog is None:
             # A deterministic starting point, not a claim of semantic AI grouping.

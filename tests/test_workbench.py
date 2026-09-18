@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 
 from userese_video.cli import main
-from userese_video.ingest import create, demo, parse_transcript
+from userese_video.ingest import create, demo, normalize_asr, parse_transcript
 from userese_video.media import build, fingerprint, history, preview, probe, run
 from userese_video.model import Conflict, Project, relative_file, write_json
 from userese_video.server import Workbench
@@ -44,6 +44,15 @@ class WorkbenchTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             create(self.root, "replace", [])
         self.assertEqual(before, fingerprint(self.root / "decisions.json"))
+
+    def test_model_timestamps_are_bounded_without_losing_raw_evidence(self):
+        raw = [{"start": 0, "end": 2.1, "text": "One"}, {"start": 2, "end": 6, "text": "Two"}]
+        original = copy.deepcopy(raw)
+        result = normalize_asr(raw, 5)
+        self.assertEqual(result["segments"][1], {"start": 2.1, "end": 5, "text": "Two"})
+        self.assertEqual(result["raw_segments"], original)
+        self.assertEqual(raw, original)
+        self.assertEqual(len(result["timing_adjustments"]), 1)
 
     def test_saved_decisions_survive_restart_and_conflicts(self):
         state = self.project.state()

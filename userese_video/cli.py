@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from . import __version__
-from .ingest import create, demo
+from .ingest import create, demo, normalize_asr
 from .media import build, check_tools, inspect_source, run
 from .model import Project, read_json, write_json
 
@@ -80,7 +80,7 @@ def main(argv=None):
             destination = Path(args.output)
             if destination.exists():
                 raise ValueError("转写输出已存在，请使用新文件名")
-            inspect_source(Path(args.video))
+            source_info = inspect_source(Path(args.video))
             try:
                 from faster_whisper import WhisperModel
             except ImportError as exc:
@@ -93,7 +93,12 @@ def main(argv=None):
                 raise ValueError(f"本地转写失败，请检查模型路径、下载连接或运行库：{exc}") from exc
             if not cues:
                 raise ValueError("未识别到语音，请检查音轨、语言和录音内容")
-            write_json(destination, cues)
+            normalized = normalize_asr(cues, source_info["duration"])
+            if not normalized["segments"]:
+                raise ValueError("识别时间戳不在视频范围内，请检查音轨或换用其他模型")
+            write_json(destination, normalized)
+            if normalized["timing_adjustments"]:
+                print("提示：已将识别时间限定在实际视频内，原始时间和调整记录保存在输出文件中。", file=sys.stderr)
             print(json.dumps({"transcript": str(destination)}, ensure_ascii=False))
         else:
             project = Project(args.project)
