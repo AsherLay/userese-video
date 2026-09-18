@@ -12,7 +12,7 @@ description: >-
 
 Use the installed `userese-video` CLI, or `python -m userese_video` from the repository root. Locate the repository and the user's project explicitly; a project contains `project.json`. This skill describes the workbench and does not require another installed skill or a hosted AI service.
 
-Read [the project protocol](../../docs/project-format.md) when creating catalogs, adding candidates, or interpreting decision snapshots. Read [the README](../../README.md) for installation and command examples.
+Read [the project protocol](references/project-format.md) when creating catalogs, adding candidates, or interpreting decision snapshots. The [repository README](https://github.com/AsherLay/userese-video#快速开始) explains installation; the CLI must be installed separately from this skill. Run `userese-video --help` for commands.
 
 ## Prepare a project
 

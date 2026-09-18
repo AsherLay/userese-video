@@ -85,9 +85,15 @@ def main(argv=None):
                 from faster_whisper import WhisperModel
             except ImportError as exc:
                 raise ValueError('请先安装可选转写依赖：pip install ".[asr]"') from exc
-            model = WhisperModel(args.model, device=args.device, compute_type="int8" if args.device == "cpu" else "float16")
-            segments, _ = model.transcribe(args.video, language=args.language, vad_filter=True)
-            write_json(destination, [{"start": segment.start, "end": segment.end, "text": segment.text.strip()} for segment in segments])
+            try:
+                model = WhisperModel(args.model, device=args.device, compute_type="int8" if args.device == "cpu" else "float16")
+                segments, _ = model.transcribe(args.video, language=args.language, vad_filter=True)
+                cues = [{"start": segment.start, "end": segment.end, "text": segment.text.strip()} for segment in segments]
+            except Exception as exc:
+                raise ValueError(f"本地转写失败，请检查模型路径、下载连接或运行库：{exc}") from exc
+            if not cues:
+                raise ValueError("未识别到语音，请检查音轨、语言和录音内容")
+            write_json(destination, cues)
             print(json.dumps({"transcript": str(destination)}, ensure_ascii=False))
         else:
             project = Project(args.project)
